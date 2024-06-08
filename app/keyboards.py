@@ -12,4 +12,7 @@ menu = InlineKeyboardMarkup(inline_keyboard=[
 
 choice_action = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Добавление переноса строк', callback_data='add_br'),
-     InlineKeyboardButton(text='Подсчет работ', callback_data='cnt')]])
+     InlineKeyboardButton(text='Подсчет работ', callback_data='cnt')],
+    [InlineKeyboardButton(text='Залить таблицу в ситсему учета', callback_data='upload')],
+    [InlineKeyboardButton(text='Назад в главное меню', callback_data='back_to_menu')]
+])

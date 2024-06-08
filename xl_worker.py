@@ -5,6 +5,7 @@ from datetime import datetime
 
 
 async def line_breaks(dir_path_):
+    print(dir_path_)
     wb = load_workbook(dir_path_)
     ws = wb.active
 
@@ -88,17 +89,17 @@ async def add_user(user_name):
     gc = gspread.service_account(filename='creds.json')
     sheet = gc.open("Work_count").sheet1
 
-    for col in range(2, 15):
+    for col in [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35]:
         if not sheet.cell(row=1, col=col).value:
             sheet.update_cell(row=1, col=col, value=user_name)
-            sheet.update_cell(row=2, col=col, value='max_cost')
-            sheet.update_cell(row=2, col=col+1, value='min_cost')
-            sheet.update_cell(row=2, col=col+2, value='Всего')
+            sheet.update_cell(row=2, col=col, value='min_cost')
+            sheet.update_cell(row=2, col=col+1, value='max_cost')
+            sheet.update_cell(row=2, col=col+2, value='Таблицы')
 
             sheet.update_cell(row=1, col=col+3, value=user_name+' Д')
-            sheet.update_cell(row=2, col=col+3, value='max_cost')
-            sheet.update_cell(row=2, col=col+4, value='min_cost')
-            sheet.update_cell(row=2, col=col+5, value='Всего')
+            sheet.update_cell(row=2, col=col+3, value='min_cost')
+            sheet.update_cell(row=2, col=col+4, value='max_cost')
+            sheet.update_cell(row=2, col=col+5, value='Таблицы')
             break
 
 
@@ -122,15 +123,30 @@ async def add_result(min_cost, max_cost, table_name, user):
         sheet.update_cell(row=cur_row+1, col=1, value=current_date)
 
     if not remotely:
-        sheet.update_cell(row=cur_row + 1, col=user_col, value=min_cost)
-        sheet.update_cell(row=cur_row + 1, col=user_col + 1, value=max_cost)
-        sheet.update_cell(row=cur_row + 1, col=user_col + 2, value=max_cost + min_cost)
+        plus_min, plus_max, plus_table = 0, 1, 2
     else:
-        sheet.update_cell(row=cur_row + 1, col=user_col + 3, value=min_cost)
-        sheet.update_cell(row=cur_row + 1, col=user_col + 4, value=max_cost)
-        sheet.update_cell(row=cur_row + 1, col=user_col + 5, value=max_cost + min_cost)
+        plus_min, plus_max, plus_table = 3, 4, 5
+
+    last_min = sheet.cell(cur_row + 1, user_col).value
+    last_max = sheet.cell(cur_row + 1, user_col + 1).value
+
+    last_table = sheet.cell(cur_row + 1, user_col + 2).value
+    if last_table:
+        if table_name in last_table.split(', '):
+            return False
+
+    if last_table:
+        last_table += ', '
+    else:
+        last_table = ''
+    if not last_max:
+        last_max, last_min = 0, 0
+    sheet.update_cell(row=cur_row + 1, col=user_col + plus_min, value=int(last_min) + min_cost)
+    sheet.update_cell(row=cur_row + 1, col=user_col + plus_max, value=int(last_max) + max_cost)
+    sheet.update_cell(row=cur_row + 1, col=user_col + plus_table, value=last_table + table_name)
+    return True
 
 
 if __name__ == "__main__":
     # asyncio.run(add_user('Жорик'))
-    asyncio.run(add_result(13, 64, 'Таблица(дата).xlsx', 'Жорик'))
+    asyncio.run(add_result(25, 50, 'Таблица3(дата).xlsx', 'Жорик'))
