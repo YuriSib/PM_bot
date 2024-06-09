@@ -74,13 +74,15 @@ async def cards_count(dir_path_):
                 zero_cost += 1
                 continue
         else:
-            cnt_str = description.count('•')
-            cnt_photo = len(pic_cnt.split(','))
-
-            if cnt_str >= 4 and cnt_photo >= 3:
-                max_cost += 1
+            if pic_cnt and description:
+                cnt_str = description.count('•')
+                cnt_photo = len(pic_cnt.split(','))
+                if cnt_str >= 4 and cnt_photo >= 2:
+                    max_cost += 1
+                else:
+                    min_cost += 1
             else:
-                min_cost += 1
+                print(row)
 
     return min_cost, max_cost
 
@@ -95,19 +97,12 @@ async def add_user(user_name):
             sheet.update_cell(row=2, col=col, value='min_cost')
             sheet.update_cell(row=2, col=col+1, value='max_cost')
             sheet.update_cell(row=2, col=col+2, value='Таблицы')
-
-            sheet.update_cell(row=1, col=col+3, value=user_name+' Д')
-            sheet.update_cell(row=2, col=col+3, value='min_cost')
-            sheet.update_cell(row=2, col=col+4, value='max_cost')
-            sheet.update_cell(row=2, col=col+5, value='Таблицы')
             break
 
 
 async def add_result(min_cost, max_cost, table_name, user):
     gc = gspread.service_account(filename='creds.json')
     sheet = gc.open("Work_count").sheet1
-
-    remotely = True if 'Д.xlsx' in table_name else False
 
     user_list = sheet.row_values(1)
     user_col = user_list.index(user)+1
@@ -122,17 +117,13 @@ async def add_result(min_cost, max_cost, table_name, user):
         cur_row = len(rows)
         sheet.update_cell(row=cur_row+1, col=1, value=current_date)
 
-    if not remotely:
-        plus_min, plus_max, plus_table = 0, 1, 2
-    else:
-        plus_min, plus_max, plus_table = 3, 4, 5
-
     last_min = sheet.cell(cur_row + 1, user_col).value
     last_max = sheet.cell(cur_row + 1, user_col + 1).value
 
     last_table = sheet.cell(cur_row + 1, user_col + 2).value
     if last_table:
-        if table_name in last_table.split(', '):
+        last_table_list = [table + '.xlsx' for table in last_table.split('.xlsx, ')]
+        if table_name in last_table_list:
             return False
 
     if last_table:
@@ -141,9 +132,9 @@ async def add_result(min_cost, max_cost, table_name, user):
         last_table = ''
     if not last_max:
         last_max, last_min = 0, 0
-    sheet.update_cell(row=cur_row + 1, col=user_col + plus_min, value=int(last_min) + min_cost)
-    sheet.update_cell(row=cur_row + 1, col=user_col + plus_max, value=int(last_max) + max_cost)
-    sheet.update_cell(row=cur_row + 1, col=user_col + plus_table, value=last_table + table_name)
+    sheet.update_cell(row=cur_row + 1, col=user_col, value=int(last_min) + min_cost)
+    sheet.update_cell(row=cur_row + 1, col=user_col + 1, value=int(last_max) + max_cost)
+    sheet.update_cell(row=cur_row + 1, col=user_col + 2, value=last_table + table_name)
     return True
 
 

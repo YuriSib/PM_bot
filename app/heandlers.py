@@ -58,6 +58,18 @@ async def sign_in(message: Message, state: FSMContext):
     await bot.send_message(chat_id=message.from_user.id, text='Введите ваше имя:')
 
 
+@router.callback_query(lambda callback_query: callback_query.data.startswith('info'))
+async def get_xl(callback: CallbackQuery, bot):
+    await bot.delete_message(chat_id=callback.from_user.id, message_id=callback.message.message_id)
+    await bot.send_message(chat_id=callback.from_user.id,
+                           text='Карточки в зависимости от их наполненности будут подразделятся на 2 типа. \n'
+                                '   1. Полный - в карточке не менее 3-х строк описания, "Бренд", "Страна" и другой '
+                                'аттрибут фильтрации, например "Тип". Такая карточка оценевается в 9 рублей. \n'
+                                '   2. Не полный - не менее 2-х строк описания, "Бренд" и "Страна". Такая карточка '
+                                'оценивается в 6 рублей.',
+                           reply_markup=kb.menu)
+
+
 @router.message(WorkerName.name)
 async def save_name(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
