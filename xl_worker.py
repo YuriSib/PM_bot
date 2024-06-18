@@ -76,8 +76,8 @@ async def cards_count(dir_path_):
         else:
             if pic_cnt and description:
                 cnt_str = description.count('•')
-                cnt_photo = len(pic_cnt.split(','))
-                if cnt_str >= 4 and cnt_photo >= 2:
+                cnt_photo = len(pic_cnt.split(';'))
+                if cnt_str >= 3 and cnt_photo >= 2:
                     max_cost += 1
                 else:
                     min_cost += 1
