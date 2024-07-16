@@ -1,15 +1,15 @@
 import os
+from datetime import datetime
 
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-
 from aiogram.types.input_file import FSInputFile
 
 
 from settings import TOKEN
-from xl_worker import line_breaks, cards_count
+from xl_worker import line_breaks, cards_count, work_cnt
 import app.keyboards as kb
 import sqlite_comands as sql
 
@@ -41,8 +41,14 @@ async def menu(message: Message):
 
 @router.callback_query(lambda callback_query: callback_query.data.startswith('back_to_menu'))
 async def sign_in(callback: CallbackQuery, bot):
-    await bot.delete_message(chat_id=callback.from_user.id, message_id=callback.message.message_id)
-    await bot.send_message(chat_id=callback.from_user.id, text='Выберите пункт:', reply_markup=kb.menu)
+    try:
+        await bot.delete_message(chat_id=callback.from_user.id, message_id=callback.message.message_id)
+    except Exception:
+        pass
+    if callback.from_user.id != 674796107:
+        await bot.send_message(chat_id=callback.from_user.id, text='Выберите пункт:', reply_markup=kb.menu)
+    else:
+        await bot.send_message(chat_id=callback.from_user.id, text='Выберите пункт:', reply_markup=kb.admin_menu)
 
 
 class WorkerName(StatesGroup):
@@ -54,6 +60,21 @@ async def sign_in(message: Message, state: FSMContext):
     await state.set_state(WorkerName.name)
     await message.answer(f'Ваше имя')
     await bot.send_message(chat_id=message.from_user.id, text='Введите ваше имя:')
+
+
+@router.callback_query(lambda callback_query: callback_query.data.startswith('work_count'))
+async def sign_in(message: Message):
+    current_date = datetime.now()
+    formatted_date = current_date.strftime('%d-%m-%y')
+    table_name = f'work_cnt_{formatted_date}.xlsx'
+
+    verified_status = await sql.get_unverified_table()
+    if verified_status:
+        await work_cnt(f'/root/proj/PM_bot/{table_name}')
+        await bot.send_document(chat_id=message.from_user.id, document=FSInputFile(path=f'/root/proj/PM_bot/{table_name}'))
+        await sql.update_verified_status()
+    else:
+        await bot.send_message(chat_id=message.from_user.id, text='Новых таблиц нет!')
 
 
 @router.callback_query(lambda callback_query: callback_query.data.startswith('info'))

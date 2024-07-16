@@ -9,6 +9,11 @@ menu = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Загрузить таблицу', callback_data='load_table'),
      InlineKeyboardButton(text='Информация', callback_data='info')]])
 
+admin_menu = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Загрузить таблицу', callback_data='load_table')],
+    [InlineKeyboardButton(text='Сделать подсчет работ', callback_data='work_count')],
+    [InlineKeyboardButton(text='Информация', callback_data='info')]])
+
 
 choice_action = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Добавление переноса строк', callback_data='add_br'),
@@ -22,7 +27,7 @@ admin_choice_action = InlineKeyboardMarkup(inline_keyboard=[
      InlineKeyboardButton(text='Подсчет работ', callback_data='cnt')],
     [InlineKeyboardButton(text='Залить таблицу в систему учета', callback_data='upload')],
     [InlineKeyboardButton(text='Залить таблицу как другой пользователь', callback_data='admin_upload')],
-    [InlineKeyboardButton(text='Назад в главное меню', callback_data='back_to_menu')]
+    [InlineKeyboardButton(text='Назад в главное меню', callback_data='back_to_menu')],
 ])
 
 
